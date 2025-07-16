@@ -1,0 +1,381 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flagger-canary-dashboard-ej
+  labels:
+    grafana_dashboard: "1" # This label is crucial for Grafana to discover the dashboard
+data:
+  flagger-canary-ej-dashboard.json: |-
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "Enterprise-grade dashboard for visualizing Flagger Canary rollout progression, providing real-time insights into deployment status, performance, and stability for applications managed by Flagger. Designed for critical review by senior DevOps engineers.",
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": { "text": "Initializing" },
+                    "1": { "text": "Progressing" },
+                    "2": { "text": "Succeeded" },
+                    "3": { "text": "Failed" },
+                    "4": { "text": "Waiting" },
+                    "5": { "text": "Rolled Back" }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 3 },
+                  { "color": "orange", "value": 1 }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 0,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto"
+          },
+          "pluginVsVersion": "7.5.7",
+          "targets": [
+            {
+              "expr": "flagger_canary_status{name='<YOUR_APP_NAME>', namespace='<YOUR_APP_NAMESPACE>'}",
+              "refId": "A"
+            }
+          ],
+          "title": "Current Canary Phase",
+          "type": "stat"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": { "text": "Initializing" },
+                    "1": { "text": "Progressing" },
+                    "2": { "text": "Succeeded" },
+                    "3": { "text": "Failed" },
+                    "4": { "text": "Waiting" },
+                    "5": { "text": "Rolled Back" }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 3 },
+                  { "color": "orange", "value": 1 }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 16,
+            "x": 8,
+            "y": 0
+          },
+          "id": 4,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "flagger_canary_status{name='<YOUR_APP_NAME>', namespace='<YOUR_APP_NAMESPACE>'}",
+              "legendFormat": "{{name}} - {{namespace}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Canary Rollout History (Phase Changes)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 0,
+            "y": 4
+          },
+          "id": 6,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "flagger_canary_rollback_total{name='<YOUR_APP_NAME>', namespace='<YOUR_APP_NAMESPACE>'}",
+              "refId": "A"
+            }
+          ],
+          "title": "Total Canary Rollbacks",
+          "type": "stat"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "id": 8,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"canary\", code!~\"5..\"}[1m])) by (version) / sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"canary\"}[1m])) by (version) * 100",
+              "legendFormat": "Canary Success Rate",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"primary\", code!~\"5..\"}[1m])) by (version) / sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"primary\"}[1m])) by (version) * 100",
+              "legendFormat": "Primary Success Rate",
+              "refId": "B"
+            }
+          ],
+          "title": "Canary vs Primary Success Rate (%)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"canary\"}[1m])) by (le))",
+              "legendFormat": "Canary P99 Latency",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"primary\"}[1m])) by (le))",
+              "legendFormat": "Primary P99 Latency",
+              "refId": "B"
+            }
+          ],
+          "title": "Canary vs Primary Request Latency (P99)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "id": 12,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "flagger_canary_weight{name='<YOUR_APP_NAME>', namespace='<YOUR_APP_NAMESPACE>'}",
+              "legendFormat": "Canary Traffic Weight",
+              "refId": "A"
+            }
+          ],
+          "title": "Canary Traffic Weight (%)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "id": 14,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"canary\"}[1m]))",
+              "legendFormat": "Canary Requests/sec",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(http_requests_total{job=\"<YOUR_APP_NAME>\", namespace=\"<YOUR_APP_NAMESPACE>\", version=\"primary\"}[1m]))",
+              "legendFormat": "Primary Requests/sec",
+              "refId": "B"
+            }
+          ],
+          "title": "Canary vs Primary Request Rate",
+          "type": "timeseries"
+        }
+      ],
+      "schemaVersion": 30,
+      "style": "dark",
+      "tags": [
+        "flagger",
+        "canary",
+        "devops",
+        "edwardjones"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ],
+        "time_options": [
+          "5m",
+          "15m",
+          "1h",
+          "6h",
+          "12h",
+          "24h",
+          "2d",
+          "7d",
+          "30d"
+        ]
+      },
+      "timezone": "browser",
+      "title": "Flagger Canary Rollout Dashboard - Edward Jones",
+      "uid": "flagger-canary-ej-dashboard",
+      "version": 1
+    }
